@@ -1,0 +1,98 @@
+/* Query 1, query used for first question at set #1*/
+SELECT
+  f.title AS film_title,
+  c.name AS category_name,
+  COUNT(r.*) AS rental_count
+FROM
+  film f
+  JOIN film_category fc ON f.film_id = fc.film_id
+  JOIN category c ON c.category_id = fc.category_id
+  JOIN inventory i ON i.film_id = f.film_id
+  JOIN rental r ON r.inventory_id = i.inventory_id
+WHERE
+  c.name IN (
+    'Animation', 'Children', 'Classics',
+    'Comedy', 'Family', 'Music'
+  )
+GROUP BY
+  1,
+  2
+ORDER BY
+  2,
+  1;
+
+
+/* Query 2, query used for second question at set #1*/
+SELECT
+  sub.*,
+  NTILE(4) OVER (
+    ORDER BY
+      rental_duration
+  ) AS Standard_quartile
+FROM
+  (
+    SELECT
+      f.title AS title,
+      c.name AS name,
+      f.rental_duration AS rental_duration
+    FROM
+      film f
+      JOIN film_category fc ON f.film_id = fc.film_id
+      JOIN category c ON c.category_id = fc.category_id
+    WHERE
+      c.name IN (
+        'Animation', 'Children', 'Classics',
+        'Comedy', 'Family', 'Music'
+      )
+  ) AS sub;
+
+
+/* Query 3, query used for third question at set #1*/
+SELECT
+  sub.name AS name,
+  sub.Standard_quartile,
+  COUNT(*)
+FROM
+  (
+    SELECT
+      f.title AS title,
+      c.name AS name,
+      f.rental_duration AS rental_duration,
+      NTILE(4) OVER (
+        ORDER BY
+          rental_duration
+      ) AS Standard_quartile
+    FROM
+      film f
+      JOIN film_category fc ON f.film_id = fc.film_id
+      JOIN category c ON c.category_id = fc.category_id
+    WHERE
+      c.name IN (
+        'Animation', 'Children', 'Classics',
+        'Comedy', 'Family', 'Music'
+      )
+  ) AS sub
+GROUP by
+  1,
+  2
+ORDER BY
+  1,
+  2;
+
+
+/* Query 4, query used for first question at set #2*/
+SELECT
+  DATE_PART('month', r.rental_date) AS Rental_month,
+  DATE_PART('year', r.rental_date) AS Rental_year,
+  s.store_id AS Store_id,
+  COUNT(r.*) AS Count_rental
+FROM
+  store s
+  JOIN staff st ON s.manager_staff_id = st.staff_id
+  JOIN rental r ON r.staff_id = st.staff_id
+GROUP BY
+  1,
+  2,
+  3
+ORDER BY
+  4 DESC;
